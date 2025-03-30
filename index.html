@@ -11,12 +11,10 @@
             text-align: center;
             padding: 20px;
         }
-
         h1 {
             color: #ff6f61;
             font-size: 2.5em;
         }
-
         textarea {
             width: 70%;
             height: 150px;
@@ -25,7 +23,6 @@
             border: 1px solid #ccc;
             border-radius: 5px;
         }
-
         button {
             padding: 10px 20px;
             background-color: #ff6f61;
@@ -36,9 +33,29 @@
             font-size: 1em;
             margin-top: 10px;
         }
-
         button:hover {
             background-color: #ff4a3d;
+        }
+        .post {
+            background: white;
+            margin: 10px auto;
+            padding: 10px;
+            border-radius: 5px;
+            width: 70%;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+            text-align: left;
+        }
+        .delete-btn {
+            background: red;
+            color: white;
+            border: none;
+            padding: 5px;
+            cursor: pointer;
+            font-size: 0.8em;
+            position: absolute;
+            top: 10px;
+            right: 10px;
         }
     </style>
 </head>
@@ -47,33 +64,88 @@
     <h1>🍊익명 미션🍊</h1>
     <p>🍊익명으로 미션 만들어 주기!🍊</p>
 
-    <textarea id="postContent" placeholder="미션 내용."></textarea><br>
-
+    <textarea id="postContent" placeholder="미션 내용을 입력하세요."></textarea><br>
     <button onclick="submitPost()">글 제출</button>
 
+    <h2>📢 미션 목록</h2>
     <div id="postList"></div>
 
-    <script>
-        function submitPost() {
+   <script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-analytics.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyC1wB2LyPXzgCtPorEKcsCYIP2MDxfFq8E",
+    authDomain: "my-web-3f0b8.firebaseapp.com",
+    projectId: "my-web-3f0b8",
+    storageBucket: "my-web-3f0b8.firebasestorage.app",
+    messagingSenderId: "1004974661362",
+    appId: "1:1004974661362:web:e00fa3084dcf4086cd3a6b",
+    measurementId: "G-Y9243P7VSG"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+</script>
+
+        // 🔥 Firebase 초기화
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // ✏️ 글 제출 함수
+        async function submitPost() {
             const contentInput = document.getElementById("postContent").value.trim();
+            if (!contentInput) return alert("글을 작성해주세요!");
 
-            if (!contentInput) {
-                alert("글을 작성해주세요!");
-                return;
-            }
-
-            const post = {
+            await addDoc(collection(db, "posts"), {
                 content: contentInput,
-                timestamp: new Date().toISOString()
-            };
+                timestamp: new Date()
+            });
 
-            const posts = JSON.parse(localStorage.getItem("posts")) || [];
-            posts.push(post);
-            localStorage.setItem("posts", JSON.stringify(posts));
-
-            document.getElementById("postContent").value = "";
-            alert("글이 제출되었습니다!");
+            alert("글이 저장되었습니다!");
+            document.getElementById("postContent").value = ""; // 입력 필드 초기화
+            loadPosts(); // 새로고침 없이 글 다시 불러오기
         }
+
+        // 📜 글 불러오기 함수
+        async function loadPosts() {
+            const querySnapshot = await getDocs(collection(db, "posts"));
+            const postList = document.getElementById("postList");
+            postList.innerHTML = ""; // 기존 리스트 초기화
+
+            querySnapshot.forEach((doc) => {
+                const post = doc.data();
+                const postId = doc.id;
+
+                const postDiv = document.createElement("div");
+                postDiv.classList.add("post");
+                postDiv.innerHTML = `
+                    <p>${post.content}</p>
+                    <small>${new Date(post.timestamp.toDate()).toLocaleString()}</small>
+                    <br>
+                    <button class="delete-btn" onclick="deletePost('${postId}')">삭제</button>
+                `;
+
+                postList.appendChild(postDiv);
+            });
+        }
+
+        // 🗑️ 글 삭제 함수 (관리자 기능)
+        async function deletePost(postId) {
+            if (!confirm("정말 삭제하시겠습니까?")) return;
+            await deleteDoc(doc(db, "posts", postId));
+            alert("삭제되었습니다!");
+            loadPosts();
+        }
+
+        // 페이지 로드 시 자동 실행
+        window.onload = loadPosts;
     </script>
 
 </body>
