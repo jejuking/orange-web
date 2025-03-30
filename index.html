@@ -11,10 +11,12 @@
             text-align: center;
             padding: 20px;
         }
+
         h1 {
             color: #ff6f61;
             font-size: 2.5em;
         }
+
         textarea {
             width: 70%;
             height: 150px;
@@ -23,6 +25,7 @@
             border: 1px solid #ccc;
             border-radius: 5px;
         }
+
         button {
             padding: 10px 20px;
             background-color: #ff6f61;
@@ -33,29 +36,9 @@
             font-size: 1em;
             margin-top: 10px;
         }
+
         button:hover {
             background-color: #ff4a3d;
-        }
-        .post {
-            background: white;
-            margin: 10px auto;
-            padding: 10px;
-            border-radius: 5px;
-            width: 70%;
-            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
-            position: relative;
-            text-align: left;
-        }
-        .delete-btn {
-            background: red;
-            color: white;
-            border: none;
-            padding: 5px;
-            cursor: pointer;
-            font-size: 0.8em;
-            position: absolute;
-            top: 10px;
-            right: 10px;
         }
     </style>
 </head>
@@ -64,11 +47,37 @@
     <h1>🍊익명 미션🍊</h1>
     <p>🍊익명으로 미션 만들어 주기!🍊</p>
 
-    <textarea id="postContent" placeholder="미션 내용을 입력하세요."></textarea><br>
+    <textarea id="postContent" placeholder="미션 내용."></textarea><br>
+
     <button onclick="submitPost()">글 제출</button>
 
-    <h2>📢 미션 목록</h2>
     <div id="postList"></div>
+
+    <script>
+        function submitPost() {
+            const contentInput = document.getElementById("postContent").value.trim();
+
+            if (!contentInput) {
+                alert("글을 작성해주세요!");
+                return;
+            }
+
+            const post = {
+                content: contentInput,
+                timestamp: new Date().toISOString()
+            };
+
+            const posts = JSON.parse(localStorage.getItem("posts")) || [];
+            posts.push(post);
+            localStorage.setItem("posts", JSON.stringify(posts));
+
+            document.getElementById("postContent").value = "";
+            alert("글이 제출되었습니다!");
+        }
+    </script>
+
+</body>
+</html>
 
    <script type="module">
   // Import the functions you need from the SDKs you need
@@ -94,8 +103,5 @@
   const analytics = getAnalytics(app);
 </script>
 
-        // 🔥 Firebase 초기화
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-
+     
       
