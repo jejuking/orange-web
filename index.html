@@ -48,60 +48,58 @@
     <p>🍊익명으로 미션 만들어 주기!🍊</p>
 
     <textarea id="postContent" placeholder="미션 내용."></textarea><br>
-
     <button onclick="submitPost()">글 제출</button>
 
     <div id="postList"></div>
 
-    <script>
-        function submitPost() {
-            const contentInput = document.getElementById("postContent").value.trim();
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js";
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyC1wB2LyPXzgCtPorEKcsCYIP2MDxfFq8E",
+            authDomain: "my-web-3f0b8.firebaseapp.com",
+            projectId: "my-web-3f0b8",
+            storageBucket: "my-web-3f0b8.appspot.com",
+            messagingSenderId: "1004974661362",
+            appId: "1:1004974661362:web:e00fa3084dcf4086cd3a6b",
+            measurementId: "G-Y9243P7VSG"
+        };
 
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        async function submitPost() {
+            const contentInput = document.getElementById("postContent").value.trim();
             if (!contentInput) {
                 alert("글을 작성해주세요!");
                 return;
             }
 
-            const post = {
+            await addDoc(collection(db, "posts"), {
                 content: contentInput,
-                timestamp: new Date().toISOString()
-            };
+                timestamp: new Date()
+            });
 
-            const posts = JSON.parse(localStorage.getItem("posts")) || [];
-            posts.push(post);
-            localStorage.setItem("posts", JSON.stringify(posts));
-
+            alert("글이 저장되었습니다!");
             document.getElementById("postContent").value = "";
-            alert("글이 제출되었습니다!");
+            loadPosts();
         }
-    </script>
 
+        async function loadPosts() {
+            const querySnapshot = await getDocs(collection(db, "posts"));
+            const postList = document.getElementById("postList");
+            postList.innerHTML = "";
+
+            querySnapshot.forEach((doc) => {
+                const post = doc.data();
+                const postDiv = document.createElement("div");
+                postDiv.innerHTML = `<p>${post.content}</p><small>${new Date(post.timestamp.toDate()).toLocaleString()}</small>`;
+                postList.appendChild(postDiv);
+            });
+        }
+
+        window.onload = loadPosts;
+    </script>
 </body>
 </html>
-
-   <script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-analytics.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
-
-  // Your web app's Firebase configuration
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-  const firebaseConfig = {
-    apiKey: "AIzaSyC1wB2LyPXzgCtPorEKcsCYIP2MDxfFq8E",
-    authDomain: "my-web-3f0b8.firebaseapp.com",
-    projectId: "my-web-3f0b8",
-    storageBucket: "my-web-3f0b8.firebasestorage.app",
-    messagingSenderId: "1004974661362",
-    appId: "1:1004974661362:web:e00fa3084dcf4086cd3a6b",
-    measurementId: "G-Y9243P7VSG"
-  };
-
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
-</script>
-
-     
-      
